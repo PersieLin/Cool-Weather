@@ -1,6 +1,8 @@
 package tk.persielin.coolweather.db;
 
-public class County {
+import org.litepal.crud.LitePalSupport;
+
+public class County extends LitePalSupport {
 
     private int id;
 
@@ -8,7 +10,7 @@ public class County {
 
     private int cityId;
 
-    private int weatherId;
+    private String weatherId;
 
     public int getId() {
         return id;
@@ -34,11 +36,11 @@ public class County {
         this.cityId = cityId;
     }
 
-    public int getWeatherId() {
+    public String getWeatherId() {
         return weatherId;
     }
 
-    public void setWeatherId(int weatherId) {
+    public void setWeatherId(String weatherId) {
         this.weatherId = weatherId;
     }
 }

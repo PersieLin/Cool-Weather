@@ -1,6 +1,8 @@
 package tk.persielin.coolweather.db;
 
-public class Province {
+import org.litepal.crud.LitePalSupport;
+
+public class Province extends LitePalSupport {
 
     private int id;
 
