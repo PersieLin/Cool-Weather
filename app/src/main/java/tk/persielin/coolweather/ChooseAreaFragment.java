@@ -1,8 +1,10 @@
 package tk.persielin.coolweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +24,6 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-import tk.persielin.coolweather.R;
 import tk.persielin.coolweather.db.City;
 import tk.persielin.coolweather.db.County;
 import tk.persielin.coolweather.db.Province;
@@ -47,7 +48,7 @@ public class ChooseAreaFragment extends Fragment {
 
     private ArrayAdapter<String> adapter;
 
-    private List<String> dataList =new ArrayList<>();
+    private List<String> dataList = new ArrayList<>();
 
     /**
      * 省列表
@@ -82,9 +83,9 @@ public class ChooseAreaFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_area, container, false);
-        titleText = (TextView) view.findViewById(R.id.title_text);
-        backButton = (Button) view.findViewById(R.id.back_button);
-        listView = (ListView) view.findViewById(R.id.list_view);
+        titleText = view.findViewById(R.id.title_text);
+        backButton = view.findViewById(R.id.back_button);
+        listView = view.findViewById(R.id.list_view);
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
         return view;
@@ -102,6 +103,12 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = countyList.get(position).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -145,7 +152,7 @@ public class ChooseAreaFragment extends Fragment {
     private void queryCities() {
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
-        cityList = LitePal.where("provinceid = ?", String.valueOf(selectedProvince.getId())).find(City.class);
+        cityList = LitePal.where("provinceId = ?", String.valueOf(selectedProvince.getId())).find(City.class);
         if (cityList.size() > 0) {
             dataList.clear();
             for (City city : cityList) {
@@ -155,8 +162,8 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_CITY;
         } else {
-            int proviceCode = selectedProvince.getProvinceCode();
-            String address = "http://guolin.tech/api/china/" + proviceCode;
+            int provinceCode = selectedProvince.getProvinceCode();
+            String address = "http://guolin.tech/api/china/" + provinceCode;
             queryFromServer(address, "city");
         }
     }
@@ -165,9 +172,10 @@ public class ChooseAreaFragment extends Fragment {
      * 查询选中市内所有的县，优先从数据库查询，如果没有查询到再去服务器上查询
      */
     private void queryCounties() {
+
         titleText.setText(selectedCity.getCityName());
         backButton.setVisibility(View.VISIBLE);
-        countyList = LitePal.where("cityid = ?", String.valueOf(selectedCity.getId())).find(County.class);
+        countyList = LitePal.where("cityId = ?", String.valueOf(selectedCity.getId())).find(County.class);
         if (countyList.size() > 0) {
             dataList.clear();
             for (County county : countyList) {
@@ -199,9 +207,11 @@ public class ChooseAreaFragment extends Fragment {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
+                Log.d("result", responseText);
                 boolean result = false;
                 if ("province".equals(type)) {
                     result = Utility.handleProvinceResponse(responseText);
+
                 } else if ("city".equals(type)) {
                     result = Utility.handleCityResponse(responseText, selectedProvince.getId());
 
