@@ -1,5 +1,6 @@
 package tk.persielin.coolweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -28,6 +29,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 import tk.persielin.coolweather.gson.Forecast;
 import tk.persielin.coolweather.gson.Weather;
+import tk.persielin.coolweather.service.AutoUpdateService;
 import tk.persielin.coolweather.util.HttpUtil;
 import tk.persielin.coolweather.util.Utility;
 
@@ -181,6 +183,8 @@ public class WeatherActivity extends AppCompatActivity {
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
         for (Forecast forecast : weather.forecastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
             TextView dateText = view.findViewById(R.id.date_text);
